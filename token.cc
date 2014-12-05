@@ -2,7 +2,12 @@
 
 #include <string.h>
 
-void token::tokenize(const std::string& line, std::vector<std::string>* tokens) {
+void token::tokenize(std::string line, std::vector<std::string>* const tokens, std::string* const comment) {
+  size_t commentStart = line.find(';');
+  if (commentStart != std::string::npos) {
+    comment->assign(line.substr(commentStart, line.length()));
+    line.erase(commentStart, line.length());
+  }
   int lastToken = 0;
   for (int i = 0; i < line.length(); ++i) {
     if (isDelimeter(line[i]) || (i == line.length() - 1 && !isDelimeter(line[i++]))) {

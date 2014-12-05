@@ -7,6 +7,7 @@
 #include <string.h>
 
 Parser::Parser() {
+  comments_ = std::unordered_map<int, std::string>();
   labels_ = std::unordered_map<std::string, int>();
   rom_ = std::vector<std::pair<std::vector<Instruction>, int> >();
   currLocation_ = 0;
@@ -17,10 +18,25 @@ void Parser::parseLine(const std::string& raw_line, const int lineNum) {
   std::string line = raw_line;
   if (isBlankLine(line)) {
     return;
+  } else if (isCommentLine(line)) {
+    line.erase(0, line.find("*") + 1);
+    if (isBlankLine(line)) {
+      // Ignore blank comment lines
+      return;
+    }
+    trimString(&line);
+    line = "-- " + line + "\n";
+    if (comments_.find(currLocation_) != comments_.end()) {
+      comments_[currLocation_].append(line);
+    } else {
+      comments_[currLocation_] = line;
+    }
+    return;
   }
   trimString(&line);
+  std::string comment;
   std::vector<std::string> tokens;
-  token::tokenize(line, &tokens);
+  token::tokenize(line, &tokens, &comment);
 
   if (token::isLabel(tokens.front())) {
     std::string label = tokens.front();
@@ -73,7 +89,7 @@ void Parser::parseLine(const std::string& raw_line, const int lineNum) {
     exit(1);
   }
 
-  Instruction instruction(tokens);
+  Instruction instruction(tokens, comment);
   rom_[rom_.size() - 1].first.push_back(instruction);
   currLocation_ += token::numOpCodes(instruction);
 }
@@ -131,6 +147,10 @@ std::string Parser::makeRom(const char* fileName, const int romSize) {
         output += std::string(temp);
         blankCounter = 0;
       }
+      if (comments_.find(i) != comments_.end()) {
+        sprintf(temp, "%s", comments_[i].c_str());
+        output += std::string(temp);
+      }
       sprintf(temp, "%X\t\t: %s;", i, rom[i]);
       output += std::string(temp);
       if (i == instructionLabels[instructionLabelsCounter].second) {
@@ -142,7 +162,7 @@ std::string Parser::makeRom(const char* fileName, const int romSize) {
           sprintf(temp, " %% ");
           output += std::string(temp);
         }
-        sprintf(temp, "%s %%", token::unTokenize(instructionLabels[instructionLabelsCounter].first.tokens).c_str());
+        sprintf(temp, "%s %%", (token::unTokenize(instructionLabels[instructionLabelsCounter].first.tokens) + instructionLabels[instructionLabelsCounter].first.comment).c_str());
         output += std::string(temp);
       }
       sprintf(temp, "\n");
@@ -180,6 +200,15 @@ bool Parser::isBlankLine(const std::string& line) {
     }
   }
   return true;
+}
+
+bool Parser::isCommentLine(const std::string& line) {
+  for (const char& c : line) {
+    if (c > 32) {
+      return c == '*';
+    }
+  }
+  return false;
 }
 
 void Parser::trimString(std::string* line) {

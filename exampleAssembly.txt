@@ -1,4 +1,5 @@
 ORG $100
+*This is a comment line
 LDX #$1800
 LDY #$1900
 LDAA #ONE
@@ -7,7 +8,7 @@ BNE LOOP
 ORG $4A
 LOOP:
 LDAA 0, X
-TAB
+TAB; This is an inline-comment
 STAB 0, Y
 INX
 INY

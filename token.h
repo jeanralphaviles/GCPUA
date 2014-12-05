@@ -8,7 +8,7 @@
 #include <vector>
 
 namespace token {
-  void tokenize(const std::string& line, std::vector<std::string>* token);
+  void tokenize(std::string line, std::vector<std::string>* const token, std::string* const comment);
   std::string unTokenize(const std::vector<std::string>& tokens);
   bool isDelimeter(const char& c);
   bool isLabel(const std::string& token);

@@ -2,10 +2,6 @@ GCPUA
 =====
 This is an assembler I wrote for the Gator-CPU that is used in EEL 3701 at the University of Florida. This program takes a text file of G-CPU assembly instructions and translates it into a .mif rom file filled with all the correct opcodes. I wrote this to simplify the creation of programs for the G-CPU.
 
-NOTE_0: This isn't the prettiest/best code I've ever written. In fact this is probably the ugliest code I've ever written, and the code it is full of dirty hacks left and right. Here's an example from the token::tokenize function:
-"if (isDelimeter(line[i]) || (i == line.length() - 1 && !isDelimeter(line[i++])))"
-why I increment the variable i on the last expression, I have no idea. I think it was to do with spacing around the tokens in the instructions that would only happen once, hence the short circuit. These exist everywhere and what I'm trying to say is that I wouldn't waste my time trying to understand why I did what I did in some function, I wrote this in on a wim in about 15 hours over Thanksgiving break with zero planning and zero knowledge of how assemblers work. But I still recommend you take a look just for the fun of it.
-
 NOTE_1: I would NEVER trust this assembler with my Lab/Homework problems. With all the hacks I mentioned earlier. I guarantee there's some scary bug hiding somewhere waiting to pounce, like a spider sitting in it's web. I would triple check the output of this program every time I used it.
 
 NOTE_2: I reckon most of the normal G-CPU instructions will work 99% of the time, but it's the assembler directives (ORG, EQU, DS.B, ..) that will probably end up causing the most problems. Only ORG is really working as it should, EQU will work but it can cause labels to appear in in the comments of the .mif file in the wrong spots, and the other directives aren't supported at all.
@@ -33,7 +29,8 @@ The directive ORG can be used, but be careful not to cause two instructions to
 write to the same place in memory. The program should inform you of the error
 when it occurs, but just be careful.
 
-Comments can only be put after an instruction. They don't need to be separated by anything.
+Comments can only be put after an instruction. Semicolons delineate inline-comments
+and an * denotes a comment line.
 
 COMPILATION:
 ============
