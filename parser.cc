@@ -37,7 +37,9 @@ void Parser::parseLine(const std::string& raw_line, const int lineNum) {
   std::string comment;
   std::vector<std::string> tokens;
   token::tokenize(line, &tokens, &comment);
-
+  for (auto& token : tokens) {
+    std::transform(token.begin(), token.end(), token.begin(), toupper);
+  }
   if (token::isLabel(tokens.front())) {
     std::string label = tokens.front();
     if (label.back() == ':') {
