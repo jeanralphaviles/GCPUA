@@ -79,6 +79,30 @@ void Parser::parseLine(const std::string& raw_line, const int lineNum) {
         printf("Cannot calculate address at line %i\n", lineNum);
       }
       labels_[labelName] = location;
+    } else if (tokens[1] == "DS.B") {
+      std::string labelName = tokens[0];
+      int base = 10;
+      int size;
+      if (tokens[2].at(0) == '$') {
+        tokens[2] = tokens[2].substr(1, tokens[2].size());
+        base = 16;
+      }
+      try {
+        size = stoi(tokens[2], nullptr, base);
+      } catch (int e) {
+        printf("%s\n", raw_line.c_str());
+        printf("Cannot calculate address at line %i\n", lineNum);
+      }
+      labels_[labelName] = currLocation_;
+      Instruction instruction(tokens, std::string());
+      rom_[rom_.size() - 1].first.push_back(instruction);
+      currLocation_ += size;
+    } else if (tokens[1] == "DC.B") {
+      std::string labelName = tokens[0];
+      labels_[labelName] = currLocation_;
+      Instruction instruction(tokens, std::string());
+      rom_[rom_.size() - 1].first.push_back(instruction);
+      currLocation_++;
     }
     return;
   }
@@ -145,6 +169,13 @@ std::string Parser::makeRom(const char* fileName, const int romSize) {
       if (blankCounter > 5) {
         sprintf(temp, "[%X..%X]\t\t: 00;\t %% zero memory %% \n\n", i - blankCounter, i - 1);
         output += std::string(temp);
+        blankCounter = 0;
+      } else if (blankCounter > 0) {
+        for (int j = i - blankCounter; j < i; ++j) {
+          sprintf(temp, "%X\t\t: 00;\n", j);
+          output += std::string(temp);
+        }
+        output += "\n";
         blankCounter = 0;
       }
       if (comments_.find(i) != comments_.end()) {

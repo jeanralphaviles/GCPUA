@@ -1,7 +1,7 @@
 ORG $100
 *This is a comment line
-LDX #$1800
-LDY #$1900
+LDX TEMP
+LDY TABL
 LDAA #ONE
 BNE LOOP
 
@@ -15,3 +15,5 @@ INY
 BNE LOOP
 
 ONE EQU 01
+TABL DS.B 4
+TEMP DC.B 37

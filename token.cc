@@ -46,8 +46,12 @@ bool token::isLabel(const std::string& token) {
   return !token.empty() && token.at(token.size() - 1) == ':';
 }
 
-bool token::isDirective(std::vector<std::string>& tokens) {
-  return tokens.size() > 1 && tokens[1] == "EQU" || tokens[0] == "ORG";
+bool token::isDirective(const std::vector<std::string>& tokens) {
+  if (tokens.size() == 2 && tokens[0] == "ORG" ) return true;
+  if (tokens.size() == 3 && tokens[1] == "EQU" ) return true;
+  if (tokens.size() == 3 && tokens[1] == "DS.B") return true;
+  if (tokens.size() == 3 && tokens[1] == "DC.B") return true;
+  else                                           return false;
 }
 
 bool token::isInstruction(const std::string& token) {
@@ -106,7 +110,20 @@ std::string token::opcode(const std::string& token) {
 std::vector<std::string> token::getOpCodes(const Instruction& instruction, std::unordered_map<std::string, int>& labels_) {
   std::vector<std::string> output;
   std::string token = instruction.tokens[0];
-  if (numArgs(token) == 0) {
+  if (isDirective(instruction.tokens)) {
+    if (instruction.tokens.size() == 3 && instruction.tokens[1] == "DS.B") {
+      int size = stoi(instruction.tokens[2]);
+      for (int i = 0; i < size; ++i) {
+        output.push_back("00");
+      }
+    } else if (instruction.tokens.size() == 3 && instruction.tokens[1] == "DC.B") {
+      std::string codes = instruction.tokens[2];
+      if (codes.size() < 2) {
+        codes = "0" + codes;
+      }
+      output.push_back(codes);
+    }
+  } else if (numArgs(token) == 0) {
     output.push_back(opcode(token));
   } else {
     if(isImmediate(instruction)) {
@@ -117,9 +134,13 @@ std::vector<std::string> token::getOpCodes(const Instruction& instruction, std::
       }
       if (labels_.find(immAddr) != labels_.end()) {
         immAddr = std::to_string(labels_[immAddr]);
+        char* temp = new char[256];
+        sprintf(temp, "%X", std::stoi(immAddr.c_str()));
+        immAddr = std::string(temp);
         while (immAddr.size() < numAddrBits(instruction)) {
           immAddr = "0" + immAddr;
         }
+        delete temp;
       }
       if (immAddr.size() != numAddrBits(instruction)) {
         printf("Immediate address %s is not %i bits long\n", immAddr.c_str(), numAddrBits(instruction));
@@ -137,9 +158,13 @@ std::vector<std::string> token::getOpCodes(const Instruction& instruction, std::
       }
       if (labels_.find(exAddr) != labels_.end()) {
         exAddr = std::to_string(labels_[exAddr]);
+        char* temp = new char[256];
+        sprintf(temp, "%X", std::stoi(exAddr.c_str()));
+        exAddr = std::string(temp);
         while (exAddr.size() < numAddrBits(instruction)) {
           exAddr = "0" + exAddr;
         }
+        delete temp;
       }
       if (exAddr.size() != numAddrBits(instruction)) {
         printf("Extended address %s is not %i bits long\n", exAddr.c_str(), numAddrBits(instruction));
@@ -341,19 +366,19 @@ int token::numArgs(const std::string& instruction) {
 int token::numOpCodes(const Instruction& instruction) {
   if (numArgs(instruction.tokens[0]) == 0) {
     return 1;
-  }
-  if (isIndexed(instruction) || isAbsolute(instruction)) {
+  } else if (isIndexed(instruction) || isAbsolute(instruction)) {
     return 2;
-  }
-  if (isExtended(instruction)) {
+  } else if (isExtended(instruction)) {
     return 3;
-  }
-  if (isImmediate(instruction)) {
+  } else if (isImmediate(instruction)) {
     if (instruction.tokens[0] == "LDX" || instruction.tokens[0] == "LDY") {
       return 3;
     } else {
       return 2;
     }
+  } else if (isDirective(instruction.tokens)) {
+    std::unordered_map<std::string, int> temp = std::unordered_map<std::string, int>();
+    return getOpCodes(instruction, temp).size();
   }
   return 0;
 }

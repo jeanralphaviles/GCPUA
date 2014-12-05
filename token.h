@@ -12,7 +12,7 @@ namespace token {
   std::string unTokenize(const std::vector<std::string>& tokens);
   bool isDelimeter(const char& c);
   bool isLabel(const std::string& token);
-  bool isDirective(std::vector<std::string>& tokens);
+  bool isDirective(const std::vector<std::string>& tokens);
   bool isInstruction(const std::string& token);
   std::string opcode(const std::string& token);
   std::vector<std::string> getOpCodes(const Instruction& instruction, std::unordered_map<std::string, int>& labels_);
