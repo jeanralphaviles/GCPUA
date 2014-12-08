@@ -140,7 +140,7 @@ std::vector<std::string> token::getOpCodes(const Instruction& instruction, std::
         while (immAddr.size() < numAddrBits(instruction)) {
           immAddr = "0" + immAddr;
         }
-        delete temp;
+        delete[] temp;
       }
       if (immAddr.size() != numAddrBits(instruction)) {
         printf("Immediate address %s is not %i bits long\n", immAddr.c_str(), numAddrBits(instruction));
@@ -164,7 +164,7 @@ std::vector<std::string> token::getOpCodes(const Instruction& instruction, std::
         while (exAddr.size() < numAddrBits(instruction)) {
           exAddr = "0" + exAddr;
         }
-        delete temp;
+        delete[] temp;
       }
       if (exAddr.size() != numAddrBits(instruction)) {
         printf("Extended address %s is not %i bits long\n", exAddr.c_str(), numAddrBits(instruction));
@@ -200,7 +200,7 @@ std::vector<std::string> token::getOpCodes(const Instruction& instruction, std::
         if (absAddr.size() > 2) {
           absAddr = absAddr.substr(absAddr.size() - 2, absAddr.size());
         }
-        delete hexNum;
+        delete[] hexNum;
       } else {
         printf("Cannot find label %s\n", absAddr.c_str());
         exit(1);

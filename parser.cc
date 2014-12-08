@@ -216,10 +216,10 @@ std::string Parser::makeRom(const char* fileName, const int romSize) {
   output += "END;\n";
 
   for (int i = 0; i < romSize; ++i) {
-    delete rom[i];
+    delete[] rom[i];
   }
-  delete temp;
-  delete rom;
+  delete[] rom;
+  delete[] temp;
   return output;
 }
 
